@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    fluxcd.io/ignore: "false"
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTPS": 443},{"HTTP": 80}]'
+  name: external-api-ingress
+  namespace: dev
+  labels:
+    app.kubernetes.io/component: alb-ingress
+    app.kubernetes.io/name: external-api
+spec:
+  tls:
+  - hosts:
+    - external-api-ingress.account-environment.internal.company.com
+  rules:
+    - host: 
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: external-api
+                port:
+                  number: 3002

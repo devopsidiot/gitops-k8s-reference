@@ -1,0 +1,59 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -f docker-compose.yaml
+    kompose.version: 1.21.0 ()
+    fluxcd.io/automated: "true"
+    fluxcd.io/tag.api: ecr-tag*
+    configmap.reloader.stakater.com/reload: "env-configmap"
+    secret.reloader.stakater.com/reload: "env-secrets"
+  creationTimestamp:
+  labels:
+    io.kompose.service: external-api
+  name: external-api
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: external-api
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert -f docker-compose.yaml
+        kompose.version: 1.21.0 ()
+        ad.datadoghq.com/external-api.logs: >-
+          [{
+              "source": "external-api",
+              "service": "external-api",
+              "log_processing_rules": [{
+                  "type": "multi_line",
+                  "name": "log_in_json",
+                  "pattern": "^\\{[^}]*\\}$"
+              }]
+          }]
+      creationTimestamp:
+      labels:
+        io.kompose.service: external-api
+    spec:
+      containers:
+      - name: external-api
+        image: 12345678790.dkr.ecr.us-west-1.amazonaws.com/ecr:external-api-githash
+        # command: ["/bin/sh",  "-c", "sleep 90"]
+        imagePullPolicy: Always
+        envFrom:
+        - configMapRef:
+            name: env-configmap
+        - secretRef:
+            name: env-secrets
+        ports:
+        - containerPort: 3002
+        resources:
+          requests:
+            cpu: 600m
+            memory: 600Mi
+status: {}

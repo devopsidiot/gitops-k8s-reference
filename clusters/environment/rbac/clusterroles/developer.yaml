@@ -1,0 +1,11 @@
+# This role should be bound to groups (such as sso-developer) and scoped 
+# to a namepace. It is an additive role, most likely combined with
+# the canned "view" ClusterRole.
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: developer
+rules:
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create"]
